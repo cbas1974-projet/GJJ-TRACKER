@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef, Component, ReactNode } from 'react';
+import React, { useState, useEffect, useMemo, useRef, ReactNode } from 'react';
 import { 
   Trophy, LayoutDashboard, ListTodo, 
   ChevronDown, ChevronUp, PlayCircle, Dumbbell, Settings, Save, 
@@ -26,7 +26,7 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { hasError: false, error: null };
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
@@ -611,13 +611,13 @@ const DrillSection: React.FC<DrillSectionProps> = ({
   title, 
   techniques, 
   progressData, 
-  drillStatusMap,
-  labels,
-  thresholds,
-  onUpdate,
-  onReset,
-  onPracticeReflex,
-  isOpenDefault = false
+  drillStatusMap, 
+  labels, 
+  thresholds, 
+  onUpdate, 
+  onReset, 
+  onPracticeReflex, 
+  isOpenDefault = false 
 }) => {
   const [isOpen, setIsOpen] = useState(isOpenDefault);
   
