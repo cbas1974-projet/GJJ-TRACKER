@@ -8,7 +8,7 @@ import {
   Plus, Edit3, Clock, Repeat, Star, ThumbsUp, History, Upload, Download, FileJson, Trash2,
   CheckCircle2, Target, Users, UserPlus, Minus, RefreshCw, MinusCircle, Zap, Info, Pencil, Share2, Link, SaveAll,
   AlertTriangle, Copy,
-  BarChart as BarChartIcon, ArrowRight
+  ArrowRight
 } from 'lucide-react';
 import { CURRICULUM } from './data';
 import { IMPORTED_MARC_ANDRE } from './initialData';
@@ -780,16 +780,49 @@ const VariationStatusList = ({
                             <span className="text-slate-400 truncate ml-2">{v.name}</span>
                          </div>
                          {!editMode && (
-                           <button 
-                             onClick={(e) => {
-                               e.stopPropagation();
-                               onUpdate(tech.id, v.id, { isPlanned: !(vp?.isPlanned) });
-                             }}
-                             className={`p-1 rounded transition-all ${vp?.isPlanned ? 'text-blue-400 bg-blue-900/30' : 'text-slate-600 hover:text-slate-400'}`}
-                             title={vp?.isPlanned ? "Retirer du plan" : "Ajouter au plan"}
-                           >
-                             <Bookmark size={12} fill={vp?.isPlanned ? "currentColor" : "none"} />
-                           </button>
+                           <div className="flex items-center space-x-1 ml-2">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const currentHist = vp?.history || [];
+                                  const newHist = [{ date: Date.now(), type: 'video' as const }, ...currentHist];
+                                  onUpdate(tech.id, v.id, { 
+                                    videoCount: (vp?.videoCount || 0) + 1,
+                                    history: newHist 
+                                  });
+                                }}
+                                className="p-1 text-slate-600 hover:text-blue-400 hover:bg-slate-800 rounded active:scale-95 transition-transform"
+                                title="+1 Vidéo"
+                              >
+                                <PlayCircle size={12} />
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const currentHist = vp?.history || [];
+                                  const newHist = [{ date: Date.now(), type: 'training' as const }, ...currentHist];
+                                  onUpdate(tech.id, v.id, { 
+                                    trainingCount: (vp?.trainingCount || 0) + 1, 
+                                    lastPracticed: Date.now(),
+                                    history: newHist
+                                  });
+                                }}
+                                className="p-1 text-slate-600 hover:text-orange-400 hover:bg-slate-800 rounded active:scale-95 transition-transform"
+                                title="+1 Tapis"
+                              >
+                                <Dumbbell size={12} />
+                              </button>
+                              <button 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onUpdate(tech.id, v.id, { isPlanned: !(vp?.isPlanned) });
+                                }}
+                                className={`p-1 rounded transition-transform active:scale-95 ${vp?.isPlanned ? 'text-blue-400 bg-blue-900/30' : 'text-slate-600 hover:text-slate-400'}`}
+                                title={vp?.isPlanned ? "Retirer du plan" : "Ajouter au plan"}
+                              >
+                                <Bookmark size={12} fill={vp?.isPlanned ? "currentColor" : "none"} />
+                              </button>
+                           </div>
                          )}
                       </div>
                     )
