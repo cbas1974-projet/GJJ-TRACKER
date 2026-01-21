@@ -1,3 +1,4 @@
+
 export const IMPORTED_MARC_ANDRE = {
   "settings": {
     "level1Name": "Découverte",
@@ -12,6 +13,7 @@ export const IMPORTED_MARC_ANDRE = {
     }
   },
   "activeStudentId": "default",
+  "programs": [], 
   "students": [
     {
       "id": "default",
