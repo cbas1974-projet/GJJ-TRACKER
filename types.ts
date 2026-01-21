@@ -92,19 +92,10 @@ export interface StudentProfile {
   plannedCombos?: PlannedCombo[]; // New field for planned sequences
 }
 
-export interface Program {
-  id: string;
-  name: string;
-  description?: string;
-  techniqueIds: string[];
-  createdAt: number;
-}
-
 export interface AppData {
   settings: AppSettings;
   students: StudentProfile[];
   activeStudentId: string;
-  programs: Program[]; // New field for teaching documents/classes
 }
 
 export const COMPETENCY_COLORS: Record<CompetencyLevel, string> = {
