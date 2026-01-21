@@ -8,7 +8,8 @@ import {
   Plus, Edit3, Clock, Repeat, Star, ThumbsUp, History, Upload, Download, FileJson, Trash2,
   CheckCircle2, Target, Users, Minus, RefreshCw, Zap, Info,
   AlertTriangle,
-  ArrowRight
+  ArrowRight,
+  Sun, Moon
 } from 'lucide-react';
 import { CURRICULUM } from './data';
 import { IMPORTED_MARC_ANDRE } from './initialData';
@@ -2021,12 +2022,30 @@ const App: React.FC = () => {
   });
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'lab' | 'plan' | 'sim' | 'settings'>('dashboard');
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('bjj_tracker_theme');
+    return (saved === 'light' || saved === 'dark') ? saved : 'dark';
+  });
   const activeStudent = appData.students.find(s => s.id === appData.activeStudentId) || appData.students[0];
   const progressData = activeStudent.progress;
 
   useEffect(() => {
     localStorage.setItem('bjj_tracker_data', JSON.stringify(appData));
   }, [appData]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('bjj_tracker_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   const handleUpdateProgress = (lessonId: string, variationId: string, updates: Partial<VariationProgress>) => {
     setAppData(prev => {
@@ -2196,58 +2215,67 @@ const App: React.FC = () => {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-blue-500/30">
+      <div className={`min-h-screen font-sans selection:bg-blue-500/30 ${theme === 'dark' ? 'bg-slate-950 text-slate-200' : 'bg-slate-50 text-slate-900'}`}>
         <div className="max-w-7xl mx-auto min-h-screen flex flex-col">
-          
+
           {/* Header (Desktop) */}
-          <header className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
+          <header className={`backdrop-blur-md border-b sticky top-0 z-50 ${theme === 'dark' ? 'bg-slate-900/80 border-slate-800' : 'bg-white/80 border-slate-200'}`}>
              <div className="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
                 <div className="flex items-center space-x-3">
                    <div className="bg-gradient-to-br from-blue-600 to-indigo-700 p-2 rounded-lg shadow-lg shadow-blue-900/20">
                       <Trophy className="text-white" size={20} />
                    </div>
                    <div>
-                      <h1 className="text-xl font-black text-white leading-none tracking-tight">
+                      <h1 className={`text-xl font-black leading-none tracking-tight ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                         GRACIE<span className="text-blue-500">TRACKER</span>
                       </h1>
-                      <div className="text-[10px] text-slate-400 font-medium tracking-widest uppercase">
-                         {activeStudent.name}
+                      <div className="flex items-center space-x-2">
+                         <span className={`text-[10px] font-medium tracking-widest uppercase ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                            {activeStudent.name}
+                         </span>
+                         <button
+                            onClick={toggleTheme}
+                            className={`p-1.5 rounded-lg transition-all ${theme === 'dark' ? 'hover:bg-slate-800 text-yellow-400' : 'hover:bg-slate-200 text-slate-600'}`}
+                            title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
+                         >
+                            {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+                         </button>
                       </div>
                    </div>
                 </div>
                 
-                <div className="hidden md:flex space-x-1 bg-slate-800 p-1 rounded-lg border border-slate-700">
-                  <button 
-                    onClick={() => setActiveTab('dashboard')} 
-                    className={`p-2 rounded-md transition-all ${activeTab === 'dashboard' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+                <div className={`hidden md:flex space-x-1 p-1 rounded-lg border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-slate-100 border-slate-300'}`}>
+                  <button
+                    onClick={() => setActiveTab('dashboard')}
+                    className={`p-2 rounded-md transition-all ${activeTab === 'dashboard' ? (theme === 'dark' ? 'bg-slate-700 text-white shadow-sm' : 'bg-white text-slate-900 shadow-sm') : (theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
                     title="Tableau de bord"
                   >
                     <LayoutDashboard size={18} />
                   </button>
-                  <button 
-                    onClick={() => setActiveTab('lab')} 
-                    className={`p-2 rounded-md transition-all ${activeTab === 'lab' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+                  <button
+                    onClick={() => setActiveTab('lab')}
+                    className={`p-2 rounded-md transition-all ${activeTab === 'lab' ? (theme === 'dark' ? 'bg-slate-700 text-white shadow-sm' : 'bg-white text-slate-900 shadow-sm') : (theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
                     title="Laboratoire"
                   >
                     <FlaskConical size={18} />
                   </button>
-                  <button 
-                    onClick={() => setActiveTab('plan')} 
-                    className={`p-2 rounded-md transition-all ${activeTab === 'plan' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+                  <button
+                    onClick={() => setActiveTab('plan')}
+                    className={`p-2 rounded-md transition-all ${activeTab === 'plan' ? (theme === 'dark' ? 'bg-slate-700 text-white shadow-sm' : 'bg-white text-slate-900 shadow-sm') : (theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
                     title="Plan"
                   >
                     <ListTodo size={18} />
                   </button>
-                  <button 
-                    onClick={() => setActiveTab('sim')} 
-                    className={`p-2 rounded-md transition-all ${activeTab === 'sim' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+                  <button
+                    onClick={() => setActiveTab('sim')}
+                    className={`p-2 rounded-md transition-all ${activeTab === 'sim' ? (theme === 'dark' ? 'bg-slate-700 text-white shadow-sm' : 'bg-white text-slate-900 shadow-sm') : (theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
                     title="Simulations"
                   >
                     <Swords size={18} />
                   </button>
-                  <button 
-                    onClick={() => setActiveTab('settings')} 
-                    className={`p-2 rounded-md transition-all ${activeTab === 'settings' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-500 hover:text-slate-300'}`}
+                  <button
+                    onClick={() => setActiveTab('settings')}
+                    className={`p-2 rounded-md transition-all ${activeTab === 'settings' ? (theme === 'dark' ? 'bg-slate-700 text-white shadow-sm' : 'bg-white text-slate-900 shadow-sm') : (theme === 'dark' ? 'text-slate-500 hover:text-slate-300' : 'text-slate-500 hover:text-slate-700')}`}
                     title="Réglages"
                   >
                     <Settings size={18} />
@@ -2327,39 +2355,39 @@ const App: React.FC = () => {
           </main>
 
           {/* Bottom Nav (Mobile Only) */}
-          <nav className="fixed md:hidden bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 pb-safe z-50">
+          <nav className={`fixed md:hidden bottom-0 left-0 right-0 border-t pb-safe z-50 ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
             <div className="flex justify-around items-center h-16">
-              <button 
-                onClick={() => setActiveTab('dashboard')} 
-                className={`flex flex-col items-center justify-center w-full h-full transition-colors ${activeTab === 'dashboard' ? 'text-blue-400' : 'text-slate-500'}`}
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className={`flex flex-col items-center justify-center w-full h-full transition-colors ${activeTab === 'dashboard' ? 'text-blue-500' : (theme === 'dark' ? 'text-slate-500' : 'text-slate-400')}`}
               >
                 <LayoutDashboard size={20} />
                 <span className="text-[10px] mt-1 font-medium">Tableau</span>
               </button>
-              <button 
-                onClick={() => setActiveTab('lab')} 
-                className={`flex flex-col items-center justify-center w-full h-full transition-colors ${activeTab === 'lab' ? 'text-purple-400' : 'text-slate-500'}`}
+              <button
+                onClick={() => setActiveTab('lab')}
+                className={`flex flex-col items-center justify-center w-full h-full transition-colors ${activeTab === 'lab' ? 'text-purple-500' : (theme === 'dark' ? 'text-slate-500' : 'text-slate-400')}`}
               >
                 <FlaskConical size={20} />
                 <span className="text-[10px] mt-1 font-medium">Labo</span>
               </button>
-              <button 
-                onClick={() => setActiveTab('plan')} 
-                className={`flex flex-col items-center justify-center w-full h-full transition-colors ${activeTab === 'plan' ? 'text-orange-400' : 'text-slate-500'}`}
+              <button
+                onClick={() => setActiveTab('plan')}
+                className={`flex flex-col items-center justify-center w-full h-full transition-colors ${activeTab === 'plan' ? 'text-orange-500' : (theme === 'dark' ? 'text-slate-500' : 'text-slate-400')}`}
               >
                 <ListTodo size={20} />
                 <span className="text-[10px] mt-1 font-medium">Plan</span>
               </button>
-              <button 
-                onClick={() => setActiveTab('sim')} 
-                className={`flex flex-col items-center justify-center w-full h-full transition-colors ${activeTab === 'sim' ? 'text-red-400' : 'text-slate-500'}`}
+              <button
+                onClick={() => setActiveTab('sim')}
+                className={`flex flex-col items-center justify-center w-full h-full transition-colors ${activeTab === 'sim' ? 'text-red-500' : (theme === 'dark' ? 'text-slate-500' : 'text-slate-400')}`}
               >
                 <Swords size={20} />
                 <span className="text-[10px] mt-1 font-medium">Sims</span>
               </button>
-              <button 
-                onClick={() => setActiveTab('settings')} 
-                className={`flex flex-col items-center justify-center w-full h-full transition-colors ${activeTab === 'settings' ? 'text-slate-200' : 'text-slate-500'}`}
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={`flex flex-col items-center justify-center w-full h-full transition-colors ${activeTab === 'settings' ? (theme === 'dark' ? 'text-slate-200' : 'text-slate-900') : (theme === 'dark' ? 'text-slate-500' : 'text-slate-400')}`}
               >
                 <Settings size={20} />
                 <span className="text-[10px] mt-1 font-medium">Réglages</span>
