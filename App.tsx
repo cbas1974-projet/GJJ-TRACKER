@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo, useRef, Component, ReactNode } from 'react';
-import { 
-  Trophy, LayoutDashboard, ListTodo, 
-  ChevronDown, ChevronUp, PlayCircle, Dumbbell, Settings, Save, 
-  Swords, CheckSquare, Lock, AlertCircle, 
-  Bookmark, NotebookPen, X, 
-  ArrowDown, Printer, FlaskConical, 
+import {
+  Trophy, LayoutDashboard, ListTodo,
+  ChevronDown, ChevronUp, PlayCircle, Dumbbell, Settings, Save,
+  Swords, CheckSquare,
+  Bookmark, NotebookPen, X,
+  ArrowDown, FlaskConical,
   Plus, Edit3, Clock, Repeat, Star, ThumbsUp, History, Upload, Download, FileJson, Trash2,
-  CheckCircle2, Target, Users, UserPlus, Minus, RefreshCw, MinusCircle, Zap, Info, Pencil, Share2, Link, SaveAll,
-  AlertTriangle, Copy,
+  CheckCircle2, Target, Users, Minus, RefreshCw, Zap, Info,
+  AlertTriangle,
   ArrowRight
 } from 'lucide-react';
 import { CURRICULUM } from './data';
@@ -1092,12 +1092,12 @@ const SimCard: React.FC<SimCardProps> = ({
   );
 };
 
-const LabView = ({ progressData, drillStatusMap, onUpdate, onConfirmPractice, onPracticeDrill, onPracticeReflex, appData, setAppData, activeStudentId }: { 
-  progressData: Record<string, LessonProgress>, 
+const LabView = ({ progressData, drillStatusMap, onUpdate, onConfirmPractice, onPracticeDrill, onPracticeReflex, appData, setAppData, activeStudentId }: {
+  progressData: Record<string, LessonProgress>,
   drillStatusMap: Record<string, DrillStatus>,
-  onUpdate: any,
+  onUpdate: (lid: string, vid: string, u: Partial<VariationProgress>) => void,
   onConfirmPractice: (msg: string) => void,
-  onPracticeDrill: (targets: any[]) => void, 
+  onPracticeDrill: (targets: { lessonId: string; variationId: string }[]) => void,
   onPracticeReflex: (techId: string) => void,
   appData: AppData,
   setAppData: React.Dispatch<React.SetStateAction<AppData>>,
@@ -1191,7 +1191,7 @@ const LabView = ({ progressData, drillStatusMap, onUpdate, onConfirmPractice, on
          return stepTargets.some(target => target.lessonId === selectedTech.id);
       })
     ).map(t => {
-       const allStepTargets: any[] = [];
+       const allStepTargets: { lessonId: string; variationId: string }[] = [];
        t.fightSimSteps?.forEach(s => allStepTargets.push(...getTargetsFromText(s)));
        
        const total = allStepTargets.length;
