@@ -8,7 +8,7 @@ import {
   Plus, Edit3, Clock, Repeat, Star, ThumbsUp, History, Upload, Download, FileJson, Trash2,
   CheckCircle2, Target, Users, UserPlus, Minus, RefreshCw, MinusCircle, Zap, Info, Pencil, Share2, Link, SaveAll,
   AlertTriangle, Copy,
-  ArrowRight, Filter, Shield, Sword, User, BrainCircuit
+  ArrowRight, Filter, Shield, Sword, User, BrainCircuit, LogIn
 } from 'lucide-react';
 import { CURRICULUM } from './data';
 import { DEFAULT_DATA } from './initialData';
@@ -2230,6 +2230,8 @@ const App: React.FC = () => {
     updateSettings,
     updateProfile,
     loginAsGuest,
+    signUp,
+    signOut,
     switchStudent,
     allStudents,
     viewingStudentId,
@@ -2252,7 +2254,7 @@ const App: React.FC = () => {
       </div>
     );
   }
-  if (!user) return <LoginView onLoginAsGuest={loginAsGuest} />;
+  if (!user) return <LoginView onLoginAsGuest={loginAsGuest} onSignUp={signUp} />;
 
   const activeStudent = appData.students.find(s => s.id === appData.activeStudentId) || appData.students[0];
   const progressData = activeStudent.progress;
@@ -2414,6 +2416,14 @@ const App: React.FC = () => {
                   title="Réglages"
                 >
                   <Settings size={18} />
+                </button>
+                <div className="w-px h-6 bg-slate-700 mx-1 self-center" />
+                <button
+                  onClick={signOut}
+                  className="p-2 rounded-md text-red-400 hover:bg-red-900/20 transition-all"
+                  title="Déconnexion"
+                >
+                  <LogIn size={18} className="rotate-180" />
                 </button>
               </div>
             </div>

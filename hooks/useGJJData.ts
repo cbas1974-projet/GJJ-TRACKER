@@ -30,6 +30,33 @@ export const useGJJData = () => {
         setLoading(false);
     }, []);
 
+    // Inscription par email/mot de passe
+    const signUp = useCallback(async (email: string, password: string, name: string): Promise<{ error?: string }> => {
+        try {
+            const { data, error } = await supabase.auth.signUp({ email, password });
+            if (error) return { error: error.message };
+            if (data.user) {
+                await supabase.from('profiles').insert({
+                    id: data.user.id,
+                    display_name: name,
+                    role: 'student'
+                });
+            }
+            return {};
+        } catch (err: any) {
+            return { error: err.message };
+        }
+    }, []);
+
+    // Déconnexion
+    const signOut = useCallback(async () => {
+        await supabase.auth.signOut();
+        setUser(null);
+        setAppData(DEFAULT_DATA);
+        setAllStudents([]);
+        setViewingStudentId(null);
+    }, []);
+
     // 1. Initialisation
     useEffect(() => {
         const initData = async () => {
@@ -324,6 +351,8 @@ export const useGJJData = () => {
         updateSettings,
         updateProfile,
         loginAsGuest,
+        signUp,
+        signOut,
         switchStudent,
         allStudents,
         viewingStudentId,
