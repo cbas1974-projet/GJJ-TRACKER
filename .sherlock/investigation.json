@@ -1,0 +1,22 @@
+{
+  "investigation_id": "cmp-sim-drills-001",
+  "projet": "GJJ-TRACKER",
+  "started": "2026-02-12T00:00:00",
+  "last_checkpoint": "2026-02-12T00:00:00",
+  "phase": 3,
+  "files_analyzed": [
+    {"path": "FightSimulationDrills.tsx", "issues": 0, "status": "done"},
+    {"path": "App.tsx (SimulationView + SimCard)", "issues": 0, "status": "done"},
+    {"path": "data.ts (CURRICULUM)", "issues": 0, "status": "done"},
+    {"path": "types.ts", "issues": 0, "status": "done"},
+    {"path": "initialData.ts", "issues": 0, "status": "done"}
+  ],
+  "files_pending": [],
+  "findings": {
+    "critical": [],
+    "important": ["Duplication fonctionnelle entre deux onglets"],
+    "improvements": ["Fusionner les deux vues en une seule avec toggle de mode"]
+  },
+  "current_focus": null,
+  "notes": "Comparaison terminee - les deux onglets lisent les memes fightSimSteps"
+}

@@ -20,7 +20,7 @@ export interface Technique {
   category: 'Mount' | 'Guard' | 'Side Mount' | 'Standing';
   drillNumber: 1 | 2 | 3 | 4;
   variations: Variation[];
-  reflexDrill?: string; 
+  reflexDrill?: string;
   fightSimSteps?: string[];
   // Hardcoded Flow Chart Connections
   parents?: string[]; // IDs of techniques leading TO this one (Prefixes)
@@ -84,6 +84,7 @@ export interface PlannedCombo {
 export interface StudentProfile {
   id: string;
   name: string;
+  belt?: string;
   progress: Record<string, LessonProgress>;
   // Stores history for specific drills (Reflex Drills) and Simulations (Fight Sims)
   // Key format: 'reflex-[techId]' or 'sim-[techId]'

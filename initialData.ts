@@ -1,4 +1,6 @@
-export const IMPORTED_MARC_ANDRE = {
+import { AppData } from './types';
+
+export const DEFAULT_DATA: AppData = {
   "settings": {
     "level1Name": "Découverte",
     "level2Name": "Consolidation",
@@ -24,8 +26,9 @@ export const IMPORTED_MARC_ANDRE = {
         "m-l35": { "techniqueId": "m-l35", "variations": { "v1": { "id": "v1", "videoCount": 0, "trainingCount": 0, "drillCount": 0, "isPlanned": false, "notes": "", "history": [] }, "v2": { "id": "v2", "videoCount": 0, "trainingCount": 0, "drillCount": 0, "isPlanned": false, "notes": "", "history": [] }, "v3": { "id": "v3", "videoCount": 0, "trainingCount": 0, "drillCount": 0, "isPlanned": false, "notes": "", "history": [] } } },
         "g-l36": { "techniqueId": "g-l36", "variations": { "v1": { "id": "v1", "videoCount": 0, "trainingCount": 0, "drillCount": 0, "isPlanned": false, "notes": "", "history": [] }, "v2": { "id": "v2", "videoCount": 0, "trainingCount": 0, "drillCount": 0, "isPlanned": false, "notes": "", "history": [] }, "v3": { "id": "v3", "videoCount": 0, "trainingCount": 0, "drillCount": 0, "isPlanned": false, "notes": "", "history": [] } } }
       },
-      "drillsCompleted": {},
-      "customConnections": { "m-l1": { "parents": ["st-l14"], "children": ["g-l36", "m-l3"] } }
+      "drillStatus": {},
+      "customConnections": { "m-l1": { "parents": ["st-l14"], "children": ["g-l36", "m-l3"] } },
+      "plannedCombos": []
     }
   ]
 };
