@@ -2230,6 +2230,10 @@ const App: React.FC = () => {
     updateSettings,
     updateProfile,
     loginAsGuest,
+    switchStudent,
+    allStudents,
+    viewingStudentId,
+    isAdmin,
     loading,
     user,
     setAppData
@@ -2354,6 +2358,27 @@ const App: React.FC = () => {
                 </div>
               </div>
 
+              {/* Admin Student Selector */}
+              {isAdmin && allStudents.length > 0 && (
+                <div className="flex items-center space-x-2">
+                  <div className="flex items-center bg-amber-900/30 border border-amber-700/50 rounded-lg px-3 py-1.5">
+                    <Shield size={14} className="text-amber-400 mr-2" />
+                    <select
+                      value={viewingStudentId || user?.id || ''}
+                      onChange={(e) => switchStudent(e.target.value)}
+                      className="bg-transparent text-amber-200 text-xs font-bold cursor-pointer focus:outline-none appearance-none pr-4"
+                      style={{ backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23d97706' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`, backgroundPosition: 'right 0 center', backgroundRepeat: 'no-repeat', backgroundSize: '1.2em 1.2em' }}
+                    >
+                      {allStudents.map(s => (
+                        <option key={s.id} value={s.id} className="bg-slate-900 text-white">
+                          {s.name}{s.belt ? ` (${s.belt})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
+
               <div className="hidden md:flex space-x-1 bg-slate-800 p-1 rounded-lg border border-slate-700">
                 <button
                   onClick={() => setActiveTab('dashboard')}
@@ -2392,6 +2417,16 @@ const App: React.FC = () => {
                 </button>
               </div>
             </div>
+
+            {/* Admin Banner: visible when viewing another student */}
+            {isAdmin && viewingStudentId && viewingStudentId !== user?.id && (
+              <div className="bg-amber-900/20 border-t border-amber-700/30 px-4 py-1.5 flex items-center justify-center">
+                <User size={12} className="text-amber-400 mr-1.5" />
+                <span className="text-[11px] text-amber-300 font-semibold">
+                  👁️ Vue Admin : {activeStudent.name}
+                </span>
+              </div>
+            )}
           </header>
 
           {/* Main Content */}

@@ -3,11 +3,26 @@ import { supabase, DBProgress, convertDBProgressToAppFormat } from '../supabaseC
 import { AppData, LessonProgress, VariationProgress, StudentProfile, DrillStatus, ConnectionOverride, PlannedCombo } from '../types';
 import { DEFAULT_DATA } from '../initialData';
 
+// Type minimal pour la liste des élèves (Admin)
+export interface StudentListItem {
+    id: string;
+    name: string;
+    belt?: string;
+    email?: string;
+}
+
 export const useGJJData = () => {
     const [appData, setAppData] = useState<AppData>(DEFAULT_DATA);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [user, setUser] = useState<any>(null);
+
+    // Admin: liste de tous les élèves
+    const [allStudents, setAllStudents] = useState<StudentListItem[]>([]);
+    // Admin: l'élève actuellement "observé" (peut être différent de l'admin lui-même)
+    const [viewingStudentId, setViewingStudentId] = useState<string | null>(null);
+
+    const isAdmin = user?.role === 'admin' || user?.isGuest;
 
     const loginAsGuest = useCallback(() => {
         setUser({ id: 'guest', email: 'demo@guest.local', role: 'admin', isGuest: true });
@@ -28,35 +43,52 @@ export const useGJJData = () => {
                 }
 
                 const { data: { session } } = await supabase.auth.getSession();
-                setUser(session?.user || null);
+                const currentUser = session?.user || null;
 
-                if (session?.user) {
-                    const { data: profile } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-                    const { data: progress } = await supabase.from('progress').select('*').eq('user_id', session.user.id);
-                    // Charger l'historique des drills/sims si nécessaire, pour l'instant on garde ça simple ou on ajoutera une table dédiée plus tard
-                    // Pour ce MVP, drillStatus et customConnections sont stockés localement ou on devra créer des tables pour eux.
-                    // NOTE: Le plan initial ne couvrait que 'progress'. Pour 'drillStatus' et 'customConnections', 
-                    // on va utiliser le localStorage pour l'instant EN ATTENDANT une migration complète, 
-                    // ou on simule pour que l'app ne plante pas.
+                if (currentUser) {
+                    // Charger le profil de l'utilisateur connecté
+                    const { data: profile } = await supabase.from('profiles').select('*').eq('id', currentUser.id).single();
+
+                    // Fusionner les infos de rôle dans l'objet user
+                    const enrichedUser = { ...currentUser, role: profile?.role || 'student' };
+                    setUser(enrichedUser);
+
+                    // Si admin, charger la liste de tous les élèves
+                    if (profile?.role === 'admin') {
+                        const { data: profiles } = await supabase.from('profiles').select('id, display_name, belt_rank, email');
+                        if (profiles) {
+                            setAllStudents(profiles.map(p => ({
+                                id: p.id,
+                                name: p.display_name || p.email || 'Sans nom',
+                                belt: p.belt_rank,
+                                email: p.email
+                            })));
+                        }
+                    }
+
+                    // Charger le progrès de l'utilisateur connecté (ou de l'élève observé)
+                    const targetId = currentUser.id;
+                    const { data: progress } = await supabase.from('progress').select('*').eq('user_id', targetId);
 
                     if (progress) {
                         const progressMap = convertDBProgressToAppFormat(progress as DBProgress[]);
 
                         setAppData(prev => ({
                             ...prev,
-                            activeStudentId: session.user.id,
+                            activeStudentId: targetId,
                             students: [{
-                                ...prev.students[0], // On garde la structure de base (settings, etc)
-                                id: session.user.id,
-                                name: profile?.display_name || session.user.email || 'Étudiant',
+                                ...prev.students[0],
+                                id: targetId,
+                                name: profile?.display_name || currentUser.email || 'Étudiant',
                                 progress: progressMap,
-                                // TODO: Persister ces champs dans Supabase (jsonb ?)
                                 drillStatus: {},
                                 customConnections: {},
                                 plannedCombos: []
                             }]
                         }));
                     }
+                } else {
+                    setUser(null);
                 }
             } catch (err: any) {
                 console.error("Erreur chargement:", err);
@@ -67,21 +99,65 @@ export const useGJJData = () => {
         };
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            setUser(session?.user || null);
             if (_event === 'SIGNED_IN') initData();
-            if (_event === 'SIGNED_OUT') setAppData(DEFAULT_DATA);
+            if (_event === 'SIGNED_OUT') {
+                setUser(null);
+                setAppData(DEFAULT_DATA);
+                setAllStudents([]);
+                setViewingStudentId(null);
+            }
         });
 
         initData();
         return () => subscription.unsubscribe();
     }, []);
 
-    // 2. Update Progress (Main)
+    // Admin: Changer l'élève observé
+    const switchStudent = useCallback(async (studentId: string) => {
+        if (!user || !isAdmin) return;
+
+        setViewingStudentId(studentId);
+
+        // En mode invité, on ne charge rien de Supabase
+        if (user.isGuest) return;
+
+        try {
+            // Charger le profil de l'élève
+            const { data: profile } = await supabase.from('profiles').select('*').eq('id', studentId).single();
+            // Charger le progrès de l'élève
+            const { data: progress } = await supabase.from('progress').select('*').eq('user_id', studentId);
+
+            if (progress) {
+                const progressMap = convertDBProgressToAppFormat(progress as DBProgress[]);
+
+                setAppData(prev => ({
+                    ...prev,
+                    activeStudentId: studentId,
+                    students: [{
+                        id: studentId,
+                        name: profile?.display_name || 'Élève',
+                        belt: profile?.belt_rank,
+                        progress: progressMap,
+                        drillStatus: {},
+                        customConnections: {},
+                        plannedCombos: []
+                    }]
+                }));
+            }
+        } catch (err: any) {
+            console.error("Erreur changement d'élève:", err);
+            setError(err.message);
+        }
+    }, [user, isAdmin]);
+
+    // 2. Update Progress (Main) - utilise activeStudentId au lieu de user.id
     const updateProgress = useCallback(async (lessonId: string, variationId: string, updates: Partial<VariationProgress>) => {
         if (!user) return;
 
+        const targetUserId = appData.activeStudentId || user.id;
+
         setAppData(prev => {
-            const studentIndex = prev.students.findIndex(s => s.id === user.id);
+            const studentIndex = prev.students.findIndex(s => s.id === targetUserId);
             if (studentIndex === -1) return prev;
             const newStudents = [...prev.students];
             const currentStudent = newStudents[studentIndex];
@@ -105,7 +181,7 @@ export const useGJJData = () => {
         if (user.isGuest) return;
 
         const payload: any = {
-            user_id: user.id,
+            user_id: targetUserId,
             technique_id: lessonId,
             variation_id: variationId,
             updated_at: new Date().toISOString()
@@ -121,13 +197,13 @@ export const useGJJData = () => {
 
         if (updates.history && updates.history.length > 0) {
             await supabase.from('history').insert({
-                user_id: user.id,
+                user_id: targetUserId,
                 technique_id: lessonId,
                 variation_id: variationId,
                 activity_type: updates.history[0].type
             });
         }
-    }, [user]);
+    }, [user, appData.activeStudentId]);
 
     // 3. Drill Status (Simulations) - LOCAL ONLY FOR NOW (TODO: Add table)
     const updateDrillStatus = useCallback((drillId: string, status: Partial<DrillStatus>) => {
@@ -171,13 +247,15 @@ export const useGJJData = () => {
         });
     }, []);
 
-    // 5. Reset Lesson
+    // 5. Reset Lesson - utilise activeStudentId
     const resetLesson = useCallback(async (lessonId: string) => {
         if (!user) return;
 
+        const targetUserId = appData.activeStudentId || user.id;
+
         // Optimistic UI
         setAppData(prev => {
-            const studentIndex = prev.students.findIndex(s => s.id === user.id);
+            const studentIndex = prev.students.findIndex(s => s.id === targetUserId);
             if (studentIndex === -1) return prev;
             const newStudents = [...prev.students];
             const currentStudent = newStudents[studentIndex];
@@ -194,10 +272,10 @@ export const useGJJData = () => {
         // Supabase Delete
         await supabase.from('progress')
             .delete()
-            .eq('user_id', user.id)
+            .eq('user_id', targetUserId)
             .eq('technique_id', lessonId);
 
-    }, [user]);
+    }, [user, appData.activeStudentId]);
 
     // 6. Planned Combos - LOCAL ONLY FOR NOW
     const updatePlannedCombos = useCallback((combos: PlannedCombo[]) => {
@@ -246,6 +324,10 @@ export const useGJJData = () => {
         updateSettings,
         updateProfile,
         loginAsGuest,
+        switchStudent,
+        allStudents,
+        viewingStudentId,
+        isAdmin,
         loading,
         error,
         user,
